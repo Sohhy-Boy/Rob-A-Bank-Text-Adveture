@@ -8,6 +8,11 @@ from item import Item
 import time
 from rpginfo import RPGInfo
 
+RED = "\033[31m"
+GREEN = "\033[32m"
+BLUE = "\033[34m"
+RESET = "\033[0m"
+
 
 
 north_gardens = Room("North Gardens")
@@ -36,7 +41,7 @@ backpack = []
 
 firstfloormeetingroom.set_description("There is a vending machine here")
 
-print("Oh no! You are being chased by cops. \nYou have 2 minutes to get to the secret underground tunnel before the cops come or else the game will be over and you will fail. \nYour time starts now. To view how much time you have left, send 'time' ")
+print("Oh no! You are being chased by cops. \nYou have 2 minutes to get to the secret underground tunnel before the cops come or else the game will be over and you will fail. \nSome useful commands are 'talk' to talk, 'give' to give items to characters, 'craft' to craft items, 'money' to view how poor you are and 'time' to see when the cops will catch you. \nYour time starts now. To view how much time you have left, send 'time' ")
 print("There are " + str(Room.number_of_rooms) + " rooms to explore.")
 
 
@@ -115,9 +120,8 @@ icecream.set_description("Cold and creamy treat.")
 
 
 start_time = time.time()
-time_limit = 120
+time_limit = 180
 
-escapetunnel.lock()
 vault.lock()
 managerroom.lock()
 basement.lock()
@@ -160,6 +164,21 @@ vault.link_room(basement, "east")
 
 customerservice.link_room(east_gardens, "north")
 east_gardens.link_room(customerservice, "south")
+
+taunts = [
+    "Dispatch: Suspect last seen near the gardens!",
+    "Cops: Surround the escapes to make sure he can't leave",
+    "Police: We have eyes on the building"
+    "Cops: A few minutes out."
+]
+
+events = [
+    "A rat scurries across the floor. Gross.",
+    "You hear footsteps above you...",
+    "The lights flicker. Creepy.",
+    "You find gum stuck to the wall. Ew."
+]
+
 while True:
     print("\n")         
     current_room.get_details()
@@ -231,9 +250,33 @@ while True:
                 if money >= 5:
                     money -= 5
                     backpack.append(soda)
-                    print("you got soda")
+                    print("you got soda, try water next time")
                 else:
                     print("Not enough money lol")
+            elif choice == "chocolate":
+                if money >= 5:
+                    money -= 5
+                    backpack.append(chocolate)
+                    print("you got chocolate, yummy")
+                else:
+                    print("Not enough money lol")
+            elif choice == "chips":
+                if money >= 5:
+                    money -= 5
+                    backpack.append(chips)
+                    print("you got chips, crunchy. You should dip them in chocolate syrup, makes it better.")
+                else:
+                    print("Not enough money lol")
+            elif choice == "icecream":
+                if money >= 5:
+                    money -= 5
+                    backpack.append(icecream)
+                    print("You got icecream, and a complimentary brain freeze to go along with it. ")
+                else:
+                    print("Not enough money lol")
+            else:
+                print("Not a valid option.")
+            
 
 
     elif command == "money":
@@ -252,8 +295,8 @@ while True:
             else:
                 print("You do not have the required items. You require $10 and soda")
         elif current_room == vault:
-            if flowers in backpack and money >= 50:
-                print("You give Sally an the items and she gives the manager keys in return.")
+            if chocolate in backpack and money >= 50:
+                print("You give Sally an the items and she gives the manager keys in return instead of the escape tunnel keys, plus she doesn't even take the flowers.")
                 backpack.append(manager_keys)
                 money -= 50
             else:
@@ -273,6 +316,9 @@ while True:
     elif command == "end":
         print("Game ended.")
         sys.exit()
+    
+    if random.randint(1,5) == 1:
+        print(random.choice(events))
 
     elif command == "climb":
         if current_room == north_gardens:
@@ -292,11 +338,21 @@ while True:
        time_limit = int(input("time to add")  )
        print(f"{time_limit}")
 
+    if random.randint(1, 20) == 1:
+        bonus = random.randint(5, 25)
+        money += bonus
+        print(GREEN + f"You stumble across a hidden $ {bonus} in loose change!" + RESET)
+
+    if random.randint(1, 8) == 1:  
+        print(RED + random.choice(taunts) + RESET)
+
     if current_room == escapetunnel:
-        code_input = input("Enter the 3-digit escape code: ")
+        code_input = int(input("Enter the escape tunnel code: "))
         if code_input == code and money >= 100:
             print(f"\nCongratulations! You escaped with ${money}. You win!")
+            RPGInfo.credits()
             sys.exit()
+ 
         elif code_input == code:
             print(f"\nYou entered the right code, but you only have ${money}. You need at least $100!")
             current_room = basement
@@ -304,4 +360,4 @@ while True:
             print("Wrong code! The tunnel remains locked.")
             current_room = basement
 
-RPGInfo.credits()
+        
